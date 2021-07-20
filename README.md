@@ -1,11 +1,11 @@
 # Introduction 
-This is for the data scientists for Centre for Human Drug Research (CHDR). The code is to be used to standardize the ML practices at CHDR. The package contained within the project has the goal to provide functionality to get insights into the Method Development and Trial@Home datasets, which can be relevant to be used within projects within CHDR.
+This is for the beginner lazy data scientists looking for functions to help streamline their data science projects.
 
 # Getting Started
 In order to get started, one can build the package and try out functionality in combination with their dataset.
 
 # Build and Test
-In order to create a distribution of the MethDevDataSci package, one can run the commmand ```python setup.py sdist bdist_wheel```. This will create a built distribution in the wheel format and currently supported by pip.
+In order to create a distribution of the lazydatasci package, one can run the commmand ```python setup.py sdist bdist_wheel```. This will create a built distribution in the wheel format and currently supported by pip.
 
 # Contribute
 One can contribute to the project by:
