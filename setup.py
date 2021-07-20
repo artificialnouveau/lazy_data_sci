@@ -7,11 +7,11 @@ with open('requirements.txt') as f:
     required = f.read().splitlines()
 
 setuptools.setup(
-    name="MethDevDataSci",
+    name="lazydatasci",
     version="0.0.1",
-    author="Ahnjili Zhuparris",
-    author_email="azhuparris@CHDR.nl",
-    description="Package of ML shortcut for CHDR Data Scientists",
+    author="Aritifical Nouveau",
+    author_email="artificalnouveau@gmail.com",
+    description="Package of ML shortcut for Lazy Data Scientists",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="",
