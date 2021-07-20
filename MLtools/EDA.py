@@ -8,7 +8,7 @@ import seaborn as sns
 
 #Check for missing data
 #=========================
-def intitial_eda_checks(df):
+def initial_eda_checks(df):
     '''
     Purpose: general idea of the total and percentage of missing data in each column
     
@@ -68,8 +68,11 @@ def drop_columns_w_many_nans(df, missing_percent):
 #=============================
 def histograms_numeric_columns(df):
     '''
-    Takes df, numerical columns as list
-    Returns a group of histagrams
+    Purpose: Plots distribution of dataframes (only selects numerical columns)
+    
+    Inputs: Pandas df
+    
+    Outputs: Returns histogram plot
     '''
     df_numeric = df.select_dtypes(include=[np.number])
     f = pd.melt(f_numeric) 
@@ -83,6 +86,7 @@ def histograms_numeric_columns(df):
 #==============================
 def compute_corr_and_p(df1,df2):
   """
+  Purpose:
   Function calculates pearson correlation and statistical significance
 
   Input:
@@ -117,6 +121,17 @@ def heatmap_numeric_w_dependent_variable(df, dependent_variable, figx=8,figy=10)
 #Outlier detection
 #=================================
 def custom_zscore(df):
+  """
+  Purpose:
+  Calculates zscores for each column
+
+  Input:
+    df: pandas dataframes
+    Note: Does not work with NaNs or non-numerical value
+  
+  Output:
+    Dataframe of zscores
+  """
   df_zscore = df.select_dtypes(include=[np.number])
   df_zscore.columns = [x + "_zscore" for x in df_zscore.columns.tolist()]
   df_zscore=(df_zscore - df_zscore.mean())/df_zscore.std(axis=0, skipna = True)
@@ -124,9 +139,18 @@ def custom_zscore(df):
 
 def findoutliers(df,col,Q1lim,Q3lim):
   """
+  Purpose:
   Any data point which is less than Q1–1.5 IQR or Q3+1.5IQR are consider as outlier
+  
+  Input:
+  df: Pandas df
+  col: column name (string)
   Qllim: low percentile range
-  Q2lim: high percentile range
+  Q3lim: high percentile range
+  
+  Output:
+  An array of outliers
+  
   """
   outliers=[]
   Q1=df[col].quantile(Q1lim)
