@@ -8,7 +8,38 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-
+#time series plots
+#===================================
+def time_series_plot(df):
+    """
+    inspiration: https://gist.github.com/jiahao87/c97214065f996b76ab8fe4ca1964b2b5
+    Purpose: Given dataframe, generate times series plot of numeric data by daily, monthly and yearly frequency
+    Input: df - pandas dataframe
+    Output: times series plot
+    """
+    print("\nTo check time series of numeric data  by daily, monthly and yearly frequency")
+    if len(df.select_dtypes(include='datetime64').columns)>0:
+        for col in df.select_dtypes(include='datetime64').columns:
+            for p in ['D', 'M', 'Y']:
+                if p=='D':
+                    print("Plotting daily data")
+                elif p=='M':
+                    print("Plotting monthly data")
+                else:
+                    print("Plotting yearly data")
+                for col_num in df.select_dtypes(include=np.number).columns:
+                    __ = df.copy()
+                    __ = __.set_index(col)
+                    __T = __.resample(p).sum()
+                    ax = __T[[col_num]].plot()
+                    ax.set_ylim(bottom=0)
+                    ax.get_yaxis().set_major_formatter(
+                    matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
+                    plt.show()
+                    
+                    
+#correlation plots
+#===================================
 def corrplot(df,size=10):
   """
   Function plots a graphical correlation matrix for each pair of columns in the dataframe.
