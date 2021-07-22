@@ -8,6 +8,63 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
+#dataframe EDA plots
+#===================================
+def numeric_eda(df, hue=None):
+    """
+    inspiration: https://gist.github.com/jiahao87/c97214065f996b76ab8fe4ca1964b2b5
+    Given dataframe, generate EDA of numeric data
+    Input: df - pandas dataframe
+    Output: Pairplots
+    
+    """
+    print("\nTo check: \nDistribution of numeric data")
+    display(df.describe().T)
+    columns = df.select_dtypes(include=np.number).columns
+    figure = plt.figure(figsize=(20, 10))
+    figure.add_subplot(1, len(columns), 1)
+    for index, col in enumerate(columns):
+        if index > 0:
+            figure.add_subplot(1, len(columns), index + 1)
+        sns.boxplot(y=col, data=df, boxprops={'facecolor': 'None'})
+    figure.tight_layout()
+    plt.show()
+    
+    if len(df.select_dtypes(include='category').columns) > 0:
+        for col_num in df.select_dtypes(include=np.number).columns:
+            for col in df.select_dtypes(include='category').columns:
+                fig = sns.catplot(x=col, y=col_num, kind='violin', data=df, height=5, aspect=2)
+                fig.set_xticklabels(rotation=90)
+                plt.show()
+    
+    # Plot the pairwise joint distributions
+    print("\nTo check pairwise joint distribution of numeric data")
+    if hue==None:
+        sns.pairplot(df.select_dtypes(include=np.number))
+    else:
+        sns.pairplot(df.select_dtypes(include=np.number).join(df[[hue]]), hue=hue)
+    plt.show()
+    
+def categorical_eda(df, hue=None):
+    """
+    inspiration: https://gist.github.com/jiahao87/c97214065f996b76ab8fe4ca1964b2b5
+    Given dataframe, generate EDA of categorical or non-numerical data
+    Input: df - pandas dataframe
+    Output: Catplots
+    
+    """
+    
+    print("\nTo check: \nUnique count of non-numeric data\n")
+    print(df.select_dtypes(include=['object', 'category']).nunique())
+    top5(df)
+    # Plot count distribution of categorical data
+    for col in df.select_dtypes(include='category').columns:
+        fig = sns.catplot(x=col, kind="count", data=df, hue=hue)
+        fig.set_xticklabels(rotation=90)
+        plt.show()
+        
+        
 #time series plots
 #===================================
 def time_series_plot(df):
