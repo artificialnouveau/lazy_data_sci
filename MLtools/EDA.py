@@ -17,7 +17,8 @@ def initial_eda_checks(df):
     Output: Prints string
     
     '''
-    if df.isnull().sum().sum() > 0:
+    #first sums columns then sums total. This calculates how many nulls there are in total
+    if df.isnull().sum(axis=1).sum() > 0:
         mask_total = df.isnull().sum().sort_values(ascending=False) 
         total = mask_total[mask_total > 0]
 
@@ -68,14 +69,11 @@ def drop_columns_w_many_nans(df, missing_percent):
 #=============================
 def histograms_numeric_columns(df):
     '''
-    Purpose: Plots distribution of dataframes (only selects numerical columns)
-    
-    Inputs: Pandas df
-    
-    Outputs: Returns histogram plot
+    Takes df, numerical columns as list
+    Returns a group of histagrams
     '''
     df_numeric = df.select_dtypes(include=[np.number])
-    f = pd.melt(f_numeric) 
+    f = pd.melt(df_numeric) 
     g = sns.FacetGrid(f, col='variable',  col_wrap=4, sharex=False, sharey=False)
     g = g.map(sns.distplot, 'value')
     return g
@@ -84,25 +82,25 @@ def histograms_numeric_columns(df):
 
 #Correlation calculations
 #==============================
-def compute_corr_and_p(df1,df2):
-  """
-  Purpose:
-  Function calculates pearson correlation and statistical significance
-
-  Input:
+def compute_corr_and_p(df,col1,col2):
+    """
+    Function calculates pearson correlation and statistical significance
+    Note: Does not work with non-numerical value and it drops rows with NaN
+    
+    
+    Input:
     df: pandas dataframes
-    Note: Does not work with NaNs or non-numerical value
+    col1,col2: two columns of interest, these are string values 'Age','Severity'
+    
   
-  Output:
+    Output:
     array of correlation r and statistical significance
-  """
-  corrs = pd.DataFrame(index=df1.columns, columns=df2.columns, dtype=np.float64)
-  pvals = corrs.copy()
-  
-  for i, j in np.product(df1.columns, df2.columns):
-    corrs.loc[i,j], pvals.loc[i,j] = pearsonr(df1[i], df2[j])
-  
-  return corrs, pvals
+    """
+    df_=df.dropna(subset=[col1,col2])
+    pearson_coef, p_value = pearsonr(df_[col1], df_[col2]) #define the columns to perform calculations on
+    del df_
+    print("Pearson Correlation Coefficient: ", round(pearson_coef,3), "and a P-value of:", round(p_value,3)) # Results 
+    return pearson_coef,p_value
 
 def heatmap_numeric_w_dependent_variable(df, dependent_variable, figx=8,figy=10):
     '''
@@ -110,12 +108,11 @@ def heatmap_numeric_w_dependent_variable(df, dependent_variable, figx=8,figy=10)
     Returns a heatmap of all independent variables' correlations with dependent variable 
     '''
     plt.figure(figsize=(figx, figy))
-    g = sns.heatmap(df.corr()[[dependent_variable]].sort_values(by=dependent_variable), 
+    sns.heatmap(df.corr()[[dependent_variable]].sort_values(by=dependent_variable), 
                     annot=True, 
                     cmap='coolwarm', 
                     vmin=-1,
                     vmax=1) 
-    return g
 
 
 #Outlier detection
@@ -123,14 +120,13 @@ def heatmap_numeric_w_dependent_variable(df, dependent_variable, figx=8,figy=10)
 def custom_zscore(df):
   """
   Purpose:
-  Calculates zscores for each column
+  Calculates zscore for entire datafarme
 
   Input:
-    df: pandas dataframes
-    Note: Does not work with NaNs or non-numerical value
-  
+  df: pandas dataframe
+
   Output:
-    Dataframe of zscores
+  Zscore dataframe
   """
   df_zscore = df.select_dtypes(include=[np.number])
   df_zscore.columns = [x + "_zscore" for x in df_zscore.columns.tolist()]
@@ -141,16 +137,15 @@ def findoutliers(df,col,Q1lim,Q3lim):
   """
   Purpose:
   Any data point which is less than Q1–1.5 IQR or Q3+1.5IQR are consider as outlier
-  
+
   Input:
-  df: Pandas df
-  col: column name (string)
+  df: pandas dataframe
+  col: Column name e.g. 'Age'
   Qllim: low percentile range
-  Q3lim: high percentile range
-  
+  Q2lim: high percentile range
+
   Output:
-  An array of outliers
-  
+  Array of outliers
   """
   outliers=[]
   Q1=df[col].quantile(Q1lim)
@@ -162,4 +157,36 @@ def findoutliers(df,col,Q1lim,Q3lim):
     if out1>up_limit or out1<low_limit:
       outliers.append(out1)
   return np.array(outliers)
-  
+
+#PCA analysis
+#=====================================
+def pcaplot(score,coeff,labels=None):
+    xs = score[:,0]
+    ys = score[:,1]
+    n = coeff.shape[0]
+
+    plt.scatter(xs ,ys) #without scaling
+    plt.xlim(-5,5)
+    plt.ylim(-5,5)
+    plt.xlabel("PC{}".format(1))
+    plt.ylabel("PC{}".format(2))
+    plt.grid('off')
+
+def pcaplot_labels(score,coeff,labels=None):
+    xs = score[:,0]
+    ys = score[:,1]
+    n = coeff.shape[0]
+
+    plt.scatter(xs ,ys) #without scaling
+    for i in range(n):
+        plt.arrow(0, 0, coeff[i,0], coeff[i,1],color = 'r',alpha = 0.5)
+        if labels is None:
+            plt.text(coeff[i,0]* 20, coeff[i,1] * 25, "Var"+str(i+1), color = 'g', ha = 'center', va = 'center')
+        else:
+            plt.text(coeff[i,0]* 20, coeff[i,1] * 25, labels[i], color = 'g', ha = 'center', va = 'center')
+
+            plt.xlim(-15,15)
+            plt.ylim(-15,15)
+            plt.xlabel("PC{}".format(1))
+            plt.ylabel("PC{}".format(2))
+            plt.grid('off')
