@@ -1,4 +1,5 @@
 
+
 from MLtools import EDA
 
 import pandas as pd
@@ -24,14 +25,14 @@ def corrplot(df,size=10):
     
   fig, ax = plt.subplots(figsize=(size, size))
   ax.matshow(corr)
-  plt.xticks(range(len(corr.columns)), corr.columns, rotation='vertical');
-  plt.yticks(range(len(corr.columns)), corr.columns);
+  plt.xticks(range(len(corr.columns)), corr.columns, rotation='vertical')
+  plt.yticks(range(len(corr.columns)), corr.columns)
   plt.subplots_adjust(left=0.25)
   # Loop over data dimensions and create text annotations.
   for (i, j), z in np.ndenumerate(corr):
     ax.text(j, i, '{:0.1f}'.format(z), ha='center', va='center')
 
-  display(fig)
+  plt.show()
 
 def corrplot_sigonly(df1,df2, siglevel=.05):
   """
@@ -55,7 +56,5 @@ def corrplot_sigonly(df1,df2, siglevel=.05):
   fig, ax = plt.subplots()
   
 
-  sns.heatmap(corrs, mask=mask, center=0, square=True, linewidths=.5, annot=True, fmt=".1f",
-           cbar_kws={'shrink': .5})
+  sns.heatmap(corrs, mask=mask, center=0, square=True, linewidths=.5, annot=True, fmt=".1f",cbar_kws={'shrink': .5})
   
-  display(fig)
