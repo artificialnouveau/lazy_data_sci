@@ -1,11 +1,16 @@
 import pandas as pd
 from statsmodels.stats.outliers_influence import variance_inflation_factor
+from statsmodels.tools.tools import add_constant
+from statsmodels.regression.linear_model import OLS
 
 def calculate_vif_(X, thresh=5.0):
     '''
     Inspiration: https://stats.stackexchange.com/questions/155028/how-to-systematically-remove-collinear-variables-in-python
     
-    Input: panda dataframe
+    Input: 
+    
+    X: panda dataframe containing all of the independent variables
+    thres: VIF threshold, anything higher than the threshold will be removed
     
     Output: Remaining columns after removing multicollinear features about threshold 5
     '''
@@ -29,3 +34,41 @@ def calculate_vif_(X, thresh=5.0):
     print('Remaining variables:')
     print(X.columns[variables])
     return X.iloc[:, variables]
+
+def backwards_elimination(X, y, threshold=0.05):
+  """
+  Purpose:
+  We check the performance of the model and then iteratively remove the worst performing features one by one 
+  till the overall performance of the model comes in acceptable range.
+  The performance metric used here to evaluate feature performance is pvalue. 
+  If the pvalue is above 0.05 (or any other threshold) then we remove the feature, else we keep it.
+
+  Input:
+  X: Pandas dataframe (independent variables only)
+  y: Pandas dataframe (dependent variables)
+  threshold: pvalue numerical variables
+
+  Output:
+  Subsets the X dataframe with the selected variables
+
+  """
+  #https://towardsdatascience.com/feature-selection-with-pandas-e3690ad8504b
+  cols = list(X.columns)
+  pmax = 1
+  while (len(cols)>0):
+    p= []
+    X_1 = X[cols].astype(float)
+    X_1 = add_constant(X_1)
+    model = OLS(y,X_1).fit()
+    p = pd.Series(model.pvalues.values[1:],index = cols)      
+    pmax = max(p)
+    feature_with_p_max = p.idxmax()
+    if(pmax>threshold):
+        cols.remove(feature_with_p_max)
+    else:
+        break
+  backwardsFeat = cols
+  print("Backwards Elimination Complete. Features Remaining:")
+  print(len(backwardsFeat), 'features')
+  print('\n'.join(map(str,backwardsFeat)))
+  return X[backwardsFeat]
