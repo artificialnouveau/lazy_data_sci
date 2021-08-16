@@ -117,7 +117,7 @@ def heatmap_numeric_w_dependent_variable(df, dependent_variable, figx=8,figy=10)
 
 #Outlier detection
 #=================================
-def custom_zscore(df):
+def create_zscoredf(df):
   """
   Purpose:
   Calculates zscore for entire datafarme
@@ -126,37 +126,78 @@ def custom_zscore(df):
   df: pandas dataframe
 
   Output:
-  Zscore dataframe
+  dataframe with converted z-scores
   """
+  
+  #only calculate the zscores for columns that are floats/integers
   df_zscore = df.select_dtypes(include=[np.number])
+  
+  #add _zscore suffix so users know which columns were converted to zscores
   df_zscore.columns = [x + "_zscore" for x in df_zscore.columns.tolist()]
+  
+  #calculate zscore
   df_zscore=(df_zscore - df_zscore.mean())/df_zscore.std(axis=0, skipna = True)
+  df_zscore=df.select_dtypes(exclude=[np.number]).join(df_zscore)
   return df_zscore
 
-def findoutliers(df,col,Q1lim,Q3lim):
+def handle_outliers_zscore(df,thres=3,handle='select'):
   """
   Purpose:
-  Any data point which is less than Q1–1.5 IQR or Q3+1.5IQR are consider as outlier
+  Select rows that do not have outliers
 
   Input:
   df: pandas dataframe
-  col: Column name e.g. 'Age'
-  Qllim: low percentile range
-  Q2lim: high percentile range
+  threshold: zscore threshold
+  handle: choose to 'select' or 'remove' rows that do not meet your zscore threshold
 
   Output:
-  Array of outliers
+  df with rows that have outliers
   """
-  outliers=[]
-  Q1=df[col].quantile(Q1lim)
-  Q3=df[col].quantile(Q3lim)
+  
+  #only calculate the zscores for columns that are floats/integers
+  df_zscore = df.select_dtypes(include=[np.number])
+  
+  if handle=='select':
+    #select rows that have zscores below the threshold
+    df_zscore=df_zscore[df_zscore.apply(lambda x: np.abs(x - x.mean()) / x.std() < thres).all(axis=1)]
+  elif handle=='remove':
+    #select rows that have zscores that are higher than the threshold
+    df_zscore=df_zscore[df_zscore.apply(lambda x: np.abs(x - x.mean()) / x.std() >= thres).all(axis=1)]
+    
+  #join with non-numerical columns that were previously excluded
+  df_zscore=df.select_dtypes(exclude=[np.number]).join(df_zscore)
+  return df_zscore
+
+
+def handle_outliers_quartile(df,Q1lim,Q3lim,handle='select'):
+  """
+  Purpose:
+  Select rows that do or do not have outliers based on quartile range
+
+  Input:
+  df: pandas dataframe
+  Q1lim: Q1 threshold
+  Q3lim: Q3 threshold
+  handle: choose to 'select' or 'remove' rows that do not meet your zscore threshold
+
+  Output:
+  df with rows that have outliers
+  """
+    
+  df_quart = df.select_dtypes(include=[np.number])
+  Q1=df_quart.quantile(Q1lim)
+  Q3=df_quart.quantile(Q3lim)
   IQR=Q3-Q1
   low_limit=Q1-(1.5*IQR)
   up_limit=Q3+(1.5*IQR)
-  for out1 in df[col]:
-    if out1>up_limit or out1<low_limit:
-      outliers.append(out1)
-  return np.array(outliers)
+  if handle=='select':
+    #select rows that have values that are below the threshold
+    df_quart = df_quart[(df_quart>low_limit)&(df_quart<up_limit)]
+  elif handle=='remove':
+    #select rows that have values that are above the threshold
+    df_quart = df_quart[(df_quart<=low_limit)|(df_quart>=up_limit)]
+  df_quart=df.select_dtypes(exclude=[np.number]).join(df_quart)
+  return df_quart
 
 #PCA analysis
 #=====================================
