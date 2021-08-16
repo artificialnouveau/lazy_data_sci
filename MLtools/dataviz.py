@@ -64,7 +64,26 @@ def categorical_eda(df, hue=None):
         fig.set_xticklabels(rotation=90)
         plt.show()
         
-        
+def plotEDAheatmap(df,groupCol,figx=15,figy=45):
+  """
+  Calculates the mean, min, max and std for each defined group in the dataframe and plots it in a heatmap
+
+  Input:
+  df: pandas dataframe
+  groupCol: name of groupby column ('string')
+  figx,figy: size of seaborn plots - takes integers
+  """
+  mean_=df.groupby(groupCol).mean().round(1)
+  min_=df.groupby(groupCol).min().round(1)
+  max_=df.groupby(groupCol).max().round(1)
+  std_=df.groupby(groupCol).std().round(1)
+  fig, axs = plt.subplots(figsize=(figx,figy),nrows=4)
+  sns.heatmap(mean_, cmap="GnBu", annot=True, ax=axs[0], fmt="g").set_title('mean')
+  sns.heatmap(min_, cmap="GnBu", annot=True, ax=axs[1], fmt="g").set_title('min')
+  sns.heatmap(max_, cmap="GnBu", annot=True, ax=axs[2], fmt="g").set_title('max')
+  sns.heatmap(std_, cmap="GnBu", annot=True, ax=axs[3], fmt="g").set_title('std')
+  
+
 #time series plots
 #===================================
 def time_series_plot(df):
