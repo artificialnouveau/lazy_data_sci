@@ -87,6 +87,33 @@ def nCrossVal_class_concensus(CV_outer,
                               percent_consensus=0.0, 
                               datscaler=StandardScaler(), 
                               print_inner=True):
+    
+    """
+    Function: Nested cross validation for classification models and providees consensus feature selection
+    
+    Input:
+    CV_outer: number of outerfolds
+    CV_inner: number of innerfolds
+    X: dataframe of features
+    y: dataframe of output
+    grpID: column of groupID
+    mod: model
+    paramSpace: hyperparameter space
+    score: metric used to optimize the model
+    scorer: metric used to evaluate outcome (ie 'r2_score')
+    percent_consensus: % of overlapping features across the outer folds
+    datscaler: scaler used to scale the feature dataframe
+    print_inner: if True the performance of the inner score is printed
+    
+    Output:
+    outer_best: results of best outfold
+    consensus_coef_i: coefficients of the consensus features 
+    final_mod: final model from best fold 
+    results_df: results from all dataframes 
+    outer_testsubs: subjects for outer fold 
+    outer_feats: which features were selected for the outer fold 
+    outer_feats_coef: coefficients for features that were selected for the outer fold 
+    """
     start = time.time()
 
     print(type(mod).__name__)
@@ -228,6 +255,33 @@ def nCrossVal_reg_concensus(CV_outer,
                             percent_consensus, 
                             datscaler=StandardScaler(), 
                             print_inner=True):
+    
+    """
+    Function: Nested cross validation for classification models and providees consensus feature selection
+    
+    Input:
+    CV_outer: number of outerfolds
+    CV_inner: number of innerfolds
+    X: dataframe of features
+    y: dataframe of output
+    grpID: column of groupID
+    mod: model
+    paramSpace: hyperparameter space
+    score: metric used to optimize the model
+    scorer: metric used to evaluate outcome (ie 'r2_score')
+    percent_consensus: % of overlapping features across the outer folds
+    datscaler: scaler used to scale the feature dataframe
+    print_inner: if True the performance of the inner score is printed
+    
+    Output:
+    outer_best: results of best outfold
+    consensus_coef_i: coefficients of the consensus features 
+    final_mod: final model from best fold 
+    results_df: results from all dataframes 
+    outer_testsubs: subjects for outer fold 
+    outer_feats: which features were selected for the outer fold 
+    outer_feats_coef: coefficients for features that were selected for the outer fold 
+    """
     start = time.time()
 
     print(type(mod).__name__)
@@ -338,6 +392,9 @@ def nCrossVal_reg_concensus(CV_outer,
 
 
 def beautify_class_results(results_df):
+    """
+    This function provides the mean and standard deviation of the cross validation performance in a nice format
+    """
     results_df['Accuracy'] = round(results_df['AccMean'], 2).astype(
         str)+'% (+/-'+round(results_df['AccSTD'], 2).astype(str)+'%)'
     results_df['Precision'] = round(results_df['PreMean'], 2).astype(
@@ -353,50 +410,11 @@ def beautify_class_results(results_df):
 
 
 def beautify_reg_results(results_df):
+    """
+    This function provides the mean and standard deviation of the cross validation performance in a nice format
+    """
     results_df['R2'] = round(results_df['R2Mean'], 2).astype(
         str)+' (+/-'+round(results_df['R2STD'], 2).astype(str)+')'
     results_df['MAE'] = round(results_df['MAEMean'], 2).astype(
         str)+' (+/-'+round(results_df['MAESTD'], 2).astype(str)+')'
     return results_df
-
-
-def outer_feats_each_fold_df(outer_feats_list, col_names, task_name):
-    fold_feats_df = pd.DataFrame(
-        columns=['task', 'fold', 'num_features', 'featindex', 'features'])
-    i = 0
-    for feats in outer_feats_list:
-        fold_feats_df.loc[i, 'task'] = task_name
-        fold_feats_df.loc[i, 'fold'] = i
-        fold_feats_df.loc[i, 'featindex'] = feats
-        fold_feats_df.loc[i, 'num_features'] = np.count_nonzero(feats)
-        fold_feats_df.loc[i, 'features'] = np.array(col_names)[feats]
-        i += 1
-
-    feats_count_df = pd.DataFrame(pd.Series(
-        [bg for bgs in fold_feats_df['features'] for bg in bgs]).value_counts()).reset_index()
-    feats_count_df.columns = ['features', 'numfolds']
-    feats_count_df['task'] = task_name
-
-    no_fold_list = list(set(col_names) - set(feats_count_df['features']))
-    if no_fold_list:
-        for feat in no_fold_list:
-            print('This feature did not appear in any folds:', feat)
-            feats_count_df = feats_count_df.append(
-                {'features': feat, 'task': task_name, 'numfolds': 0}, ignore_index=True)
-        else:
-            print('All features appeared at least in one fold')
-    return fold_feats_df, feats_count_df
-
-
-def outer_feats_coef_df(outer_feat_coef_list, col_names, task_name):
-    feats_coef_df = pd.DataFrame(columns=['task', 'fold', 'features', 'coef'])
-    i = 0
-    for feats in outer_feat_coef_list:
-        feat_coef_temp = pd.DataFrame(zip(col_names, np.transpose(
-            outer_feat_coef_list[i])), columns=['features', 'coef'])
-        feat_coef_temp['fold'] = i
-        feat_coef_temp['task'] = task_name
-        feats_coef_df = pd.concat([feats_coef_df, feat_coef_temp])
-        i += 1
-
-    return feats_coef_df
