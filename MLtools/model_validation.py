@@ -75,7 +75,18 @@ def cv_ROC_plot(cvtype, num_cv, model_parameters, X_df, y_df):
     plt.show()
 
 
-def nCrossVal_class_concensus(CV_outer, CV_inner, X, y, grpID, mod, paramSpace, score, scorer, percent_consensus=0.0, datscaler=StandardScaler(), print_inner=True):
+def nCrossVal_class_concensus(CV_outer, 
+                              CV_inner, 
+                              X, 
+                              y, 
+                              grpID, 
+                              mod, 
+                              paramSpace, 
+                              score, 
+                              scorer, 
+                              percent_consensus=0.0, 
+                              datscaler=StandardScaler(), 
+                              print_inner=True):
     start = time.time()
 
     print(type(mod).__name__)
@@ -205,7 +216,18 @@ def nCrossVal_class_concensus(CV_outer, CV_inner, X, y, grpID, mod, paramSpace, 
     return outer_best, consensus_coef_i, final_mod, results_df, outer_testsubs, outer_feats, outer_feats_coef
 
 
-def nCrossVal_reg_concensus(CV_outer, CV_inner, X, y, grpID, mod, paramSpace, score, scorer, percent_consensus, datscaler=StandardScaler(), print_inner=True):
+def nCrossVal_reg_concensus(CV_outer, 
+                            CV_inner,
+                            X, 
+                            y, 
+                            grpID, 
+                            mod, 
+                            paramSpace, 
+                            score, 
+                            scorer, 
+                            percent_consensus, 
+                            datscaler=StandardScaler(), 
+                            print_inner=True):
     start = time.time()
 
     print(type(mod).__name__)
